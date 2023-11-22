@@ -1,13 +1,14 @@
 "use client"
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
+import { Message } from "./lib/type";
 
-let socket;
+let socket : any;
 
 const Home = () => {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
-  const [allMessages, setAllMessages] = useState([]);
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     socketInitializer();
@@ -20,12 +21,12 @@ const Home = () => {
   async function socketInitializer() {
     await fetch("/api/chat");
     socket = io(); 
-    socket.on("receive-message", (data: any) => {
-      setAllMessages((pre ) => [...pre, data]);
+    socket.on("receive-message", (data: Message) => {
+      setAllMessages((allMessages: Message[]) => [...allMessages, data]);
     });
   }
 
-  function handleSubmit(e) {
+  function handleSubmit(e:any) {
     e.preventDefault();
 
     console.log("emitted");
@@ -48,9 +49,9 @@ const Home = () => {
       <br />
 
       <div>
-        {allMessages.map(({ username, message }, index) => (
+        {allMessages.map((mesage, index) => (
           <div key={index}>
-            {username}: {message}
+            {mesage.content}: {mesage.sender}
           </div>
         ))}
 

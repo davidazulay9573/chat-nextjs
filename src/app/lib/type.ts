@@ -6,7 +6,7 @@ export interface User {
 
 export interface Message {
     content: string,
-    sentTime: Date,
-    sender : User,
-    receiving : User,
+    createdAt : Date,
+    sender : string,
+    receiving : string,
 }

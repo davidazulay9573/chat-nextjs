@@ -3,7 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import  { User }  from "../../../server/models/user";
 import connectMongo from "../../../server/utils/connectMongo";
 
-
 export const authOptions : AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   // pages: {  signIn: "/" },
