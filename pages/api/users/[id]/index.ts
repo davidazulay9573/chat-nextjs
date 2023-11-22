@@ -5,14 +5,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === "GET") {
         try {
          const { id } = req.query;
-         const user = await User.findById(id);       
+         let user       
+         if(!user) user = await User.findById(id)
          !user 
-         ? res.status(404).send("The user with the given ID was not found")
+         ? res.status(404).send({error: "The user with the given ID was not found"})
          : res.status(200).json(user);
-
+           res.send(id)
         } catch (error: any) {
           if (error.path === "_id") {
-             res.status(404).send("The user with the given ID was not found");
+             res.status(404).send({error: "The user with the given ID was not found"});
               return;
            }
            console.error(error)

@@ -1,8 +1,6 @@
 'use server'
-export function sendMessage(){
-    socket.emit("send-message", {
-      username,
-      message
-    });
-    setMessage("");
+
+export  async function sendMessage(formData: FormData, socket : any){
+    console.log(formData);
+    
 }

@@ -1,37 +1,35 @@
+
 import { revalidatePath } from "next/cache";
 import { io } from "socket.io-client";
-export default function Page({ params }: { params: { user: string } }){
-const userChat = params.user
- let socket;
- async function socketInitializer() {
-    await fetch("/api/chat");
+import { getUser, getUsers } from "@/app/lib/api-requests";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../pages/api/auth/[...nextauth]";
+import { Message, User } from "@/app/lib/type";
+import ChatSection from "@/componnets/chatSection";
+
+export default async function Page({ params }: { params: { user: string } }){
+
+ const session : {user: User} | null = await getServerSession(authOptions);
+ const userChat = await getUser(params.user);
+ console.log(session);
+ 
+ const userSession = await getUser(session?.user?._id as string);
+ const messages = await (await fetch("http://localhost:3000/api/chat")).json()
+
+ let socket : any ;
     socket = io(); 
-    socket.on("receive-message", (data: any) => {
-      revalidatePath(`/chat/${userChat}`)
+    socket.on("receive-message", (data: any) => {      
+      revalidatePath(`/chat/${params.user}`);
     });
-  }
 
   return (
    <div>    
-    <div>{userChat}</div>
+    <div>{params.user}</div>
     <div className="border-b p-4 flex items-center space-x-3">
       <div className="w-10 h-10 bg-gray-300 rounded-full" />
       <div className="font-semibold">Alice Smith</div>
     </div>
-    <div className="flex-1 p-4 overflow-y-auto"> 
-      <div className="flex items-end space-x-2 mb-4">
-        <div className="w-10 h-10 bg-gray-300 rounded-full"/>
-        <div className="bg-gray-200 rounded px-4 py-2">
-          Hi there! How are you doing?
-        </div>
-      </div>
-      <div className="flex items-end justify-end space-x-2 mb-4">
-        <div className="bg-blue-500 text-white rounded px-4 py-2">
-          I'm doing great, thanks for asking!
-        </div>
-        <div className="w-10 h-10 bg-gray-300 rounded-full" />
-      </div> 
-    </div>
+      <ChatSection sender={userSession} receiving={userChat} />
    </div>
   );
 };

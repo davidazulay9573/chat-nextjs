@@ -10,16 +10,18 @@ const Home = () => {
   const [username, setUsername] = useState("");
   const [allMessages, setAllMessages] = useState<Message[]>([]);
 
-  useEffect(() => {
+  useEffect( () => {
     socketInitializer();
-
+   
+  (async () => {const messages = await (await fetch("/api/chat")).json();setAllMessages(messages) })() ;
+   
     return () => {
       socket?.disconnect();
     };
   }, []);
 
   async function socketInitializer() {
-    await fetch("/api/chat");
+
     socket = io(); 
     socket.on("receive-message", (data: Message) => {
       setAllMessages((allMessages: Message[]) => [...allMessages, data]);
@@ -32,8 +34,7 @@ const Home = () => {
     console.log("emitted");
 
     socket.emit("send-message", {
-      username,
-      message
+      content:message,    
     });
     setMessage("");
   }
