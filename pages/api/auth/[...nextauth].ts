@@ -1,7 +1,10 @@
-import NextAuth from "next-auth";
+import NextAuth , { AuthOptions, User as UserType } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import  { User }  from "../../../server/models/user";
+import connectMongo from "../../../server/utils/connectMongo";
 
-export const authOptions = {
+
+export const authOptions : AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   // pages: {  signIn: "/" },
   providers: [
@@ -11,31 +14,21 @@ export const authOptions = {
     }),
   ],
 
-  callbacks: {
-  //   signIn: async ({ user }: ) => {
-  //     const { id, email, ...restUser } = user;
-  //     const docRef = db.collection("users").doc(id);
-  //     const doc = await docRef.get();
-
-  //     // if (!doc.exists) {
-  //     //   await db
-  //     //     .collection("users")
-  //     //     .doc(id)
-  //     //     .set({
-  //     //       ...restUser,
-  //     //       bio: "",
-  //     //       friendRequests: [],
-  //     //       friends: [],
-  //     //       followers: [],
-  //     //       following: [],
-  //     //       createdAt: Date.now(),
-  //     //     });
-  //     }
-  //     return true;
-  //   },
+  callbacks: {  
+    signIn : async ({ user }:{ user : UserType} ) => {     
+      await connectMongo();     
+      const { name, email, image} = user;
+      console.log(image);
+      
+      if (!await User.findOne({email : email})) {
+        const newUser =  await new User({ name, email, image}); 
+        await newUser.save() 
+        if(newUser)return true;
+        return false;
+      }
+      return true ;
+    }
   },
 };
 
-const handler = NextAuth(authOptions);
-
-export default  handler  ;
+export default NextAuth(authOptions);

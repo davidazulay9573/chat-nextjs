@@ -1,5 +1,15 @@
-
+import { revalidatePath } from "next/cache";
+import { io } from "socket.io-client";
 export default function Page({ params }: { params: { user: string } }){
+ let socket;
+ async function socketInitializer() {
+    await fetch("/api/chat");
+    socket = io(); 
+    socket.on("receive-message", (data: any) => {
+      revalidatePath(`/chat/${params.user}`)
+    });
+  }
+
   return (
    <div>    
     <div>{params.user}</div>
