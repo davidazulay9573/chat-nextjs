@@ -14,20 +14,26 @@ type NextApiResponseWithIO = NextApiResponse & {
 export default async function SocketHandler(req: NextApiRequest, res: NextApiResponseWithIO) {
   const { sender , receiving }  =  req.query;
   if (sender && receiving) {
-
-
   if (!res.socket.server.io) { 
     const io = new Server(res.socket.server);
-    const userConnections = new Map();
-    io.on("connection", (socket: Socket) => {
-      io.to(receiving).emit("user_connected");
-      
-      socket.on("disconnect", () => {
-        userConnections.delete(sender);
-         io.to(receiving).emit("user_disconnected");
-      });
+    let connectedUsers : {[key: string]: boolean} = {};
+    io.on("connection", (socket: Socket) => {     
+      const userId = socket.handshake.query.userId;
+      if (typeof userId === 'string') {
+          connectedUsers[userId] = true;
+
+          socket.on('disconnect', () => {
+            delete connectedUsers[userId];
+            io.emit('users-status', connectedUsers);
+          });
+
+          io.emit('users-status', connectedUsers);
+      }
+      io.emit('users-status', connectedUsers);
 
       socket.on("send-message", async (data) => {
+        console.log(data);
+        
         const message = new Message(data);
         await message.save();
         io.emit("receive-message", data);

@@ -6,22 +6,24 @@ import { io } from "socket.io-client";
 let socket : any ;
 
 export default function ChatSection({sender, receiving} : {sender : User, receiving: User}){
+
   const [messageContent, setMessageContent] = useState('');
   const [allMessages, setAllMessages] = useState<Message[]>([]);
-  const [isUserOnline, setIsUserOnline] = useState(false);
+   const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
   const [isTyping, setIsTyping] = useState(false);
+
   
   useEffect( () => {
    (async () => {
     await  socketInit();
-    const messages = await (await fetch(`/api/chat?sender=${sender._id}&receiving=${receiving._id}`)).json();
+    const messages = await (await fetch(`http://localhost:3000/api/chat?sender=${sender._id}&receiving=${receiving._id}`)).json();
     messages && !messages.error && setAllMessages(messages) 
     })();
 
     return () => {
       socket?.disconnect();
-      socket.off("user_connected");
-      socket.off("user_disconnected");      
+      socket?.off("users-status");
+        
     };
   }, []);
     
@@ -33,19 +35,17 @@ export default function ChatSection({sender, receiving} : {sender : User, receiv
   async function socketInit() {
     socket = io({query : {userId: sender._id}}); 
     socket.on("receive-message", (data: Message) => { 
+      console.log(data);
+      
       setAllMessages((allMessages: Message[]) => [...allMessages, data]);
     });
     socket.on("user_typing", (data : any) => {
      setIsTyping(data.isTyping);
     });
-     
-    socket.on("user_connected", (data : any) => { console.log(data);    
-      setIsUserOnline(data.isConnected);   
+    socket.on('users-status', (users : {}) => {
+      setOnlineUsers(users);
     });
-    socket.on("user_disconnected", (data : any) => {
-      console.log(data);
-      setIsUserOnline(data.isConnected);
-    });
+
   }
   function handleSubmit(e:any) {
     e.preventDefault();
@@ -58,8 +58,7 @@ export default function ChatSection({sender, receiving} : {sender : User, receiv
         <div className="border-b p-4 flex items-center space-x-3">
         <div className="relative w-8 h-8 ">
           <img src={receiving?.image} alt={`${receiving?.name}`} className="w-10 h-10 bg-gray-300 rounded-full" />
-           {isUserOnline && <span className=" mt-3 text-green">Online</span>}
-           <p>{isUserOnline}</p>
+           {onlineUsers[receiving._id] && <span className=" mt-3 text-green">Online</span>}
         </div>
         <div className="font-semibold">{receiving?.name}</div>
       </div>
@@ -91,7 +90,6 @@ export default function ChatSection({sender, receiving} : {sender : User, receiv
           <textarea
             value={messageContent}
             onChange={handleTyping}
-            onKeyDown={handleTyping}
             autoComplete={"off"}
             name="message"
             className="p-2 border rounded-md border-gray-300 focus:border-blue-500 focus:outline-none"

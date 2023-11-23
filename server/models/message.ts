@@ -7,8 +7,9 @@ const MessageSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 255,
   },
-   sender : { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-   receiving: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    
+   sender : { required: true,  type: mongoose.Schema.Types.ObjectId, ref: "User" },
+   receiving: { required: true, type: mongoose.Schema.Types.ObjectId, ref: "User" },
    createdAt: { type: Date, default: Date.now },
 });
 
