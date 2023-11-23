@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from "react";
 import { Message, User } from "@/lib/type";
+import { getMessages } from "@/lib/api-requests";
 import { io , Socket} from "socket.io-client";
 import Link from "next/link";
  
@@ -9,17 +10,12 @@ let socket : Socket;
 export default function ChatSection({users, sender, receiving} : {users : User[], sender : User, receiving: User}){
   
   const [messageContent, setMessageContent] = useState('');
-  const [allMessages, setAllMessages] = useState<Message[]>([]);
-   const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect( () => {
-   (async () => {
-    await  socketInit();
-    const messages = receiving ?  await (await fetch(`http://localhost:3000/api/chat?sender=${sender._id}&receiving=${receiving._id}`)).json() : [];
-    messages && !messages.error && setAllMessages(messages) 
-    })();
-
+    socketInit();
     return () => {
       socket?.disconnect();
       socket?.off("users-status");
@@ -35,9 +31,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
  async function socketInit() {
     socket = io({query : {userId: sender._id}}); 
     socket.on("receive-message", (data: Message) => { 
-      console.log(data);
-      
-      setAllMessages((allMessages: Message[]) => [...allMessages, data]);
+      setMessages((messages: Message[]) => [...messages, data]);
     });
     socket.on("user_typing", (data : any) => {
       setIsTyping(data.isTyping);
@@ -45,6 +39,10 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
     socket.on('users-status', (users : {}) => {
       setOnlineUsers(users);
     });
+    if(receiving){
+      const messages =  await getMessages(sender._id, receiving._id) || []
+      messages &&  setMessages(messages) 
+    }  
   }
 
   function handleSendMessage(e:any) {
@@ -56,8 +54,6 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
   return (
     <div className="dark:bg-gray-800 min-h-screen">
         <div className="flex flex-col lg:flex-row">
-
-          {/* User List - Shown on all screen sizes, but on large screens, it's on the side */}
           <div className="lg:w-1/3 lg:border-r lg:border-gray-700">
             <div className="space-y-4 p-4 overflow-y-auto">
               {users.map((user: User) => (
@@ -69,8 +65,6 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
               ))}
             </div>
           </div>
-
-          {/* Chat Section - Only shown if 'receiving' is defined */}
           {receiving && (
             <div className="lg:w-2/3 flex flex-col">
               <div className="border-b border-gray-700 p-4 flex items-center space-x-3">
@@ -80,7 +74,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
               </div>
 
               <div className="flex-1 p-4 overflow-y-auto">
-              {allMessages.map((message : Message, index) => {
+              {messages.map((message : Message, index) => {
                   return message.sender === sender._id 
                     ? <div key={index} className="flex items-end justify-end space-x-2 mb-4">
                         <p className="bg-blue-500 text-white rounded px-4 py-2" style={{ whiteSpace: "pre-wrap" }}>
@@ -96,9 +90,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
                     </div>
                 })}
               </div>
-
               {isTyping && <p className="m-2 text-white">Typing...</p>}
-
               <form onSubmit={handleSendMessage} className="flex flex-col space-y-4 p-4">
                 <textarea
                   value={messageContent}
@@ -114,7 +106,6 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
               </form>
             </div>
           )}
-
         </div>
       </div>
     )
