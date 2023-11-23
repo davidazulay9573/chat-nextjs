@@ -1,25 +1,24 @@
 
-export default function Page(){
+import { getUser, getUsers } from "@/lib/api-requests";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../pages/api/auth/[...nextauth]";
+import { User } from "@/lib/type";
+import ChatSection from "./chatSection";
+
+export default async function Page({ searchParams }: { searchParams?: { [key: string]: string | undefined }}){
+
+ const session : {user: User} | null = await getServerSession(authOptions);
+ const userSession = await getUser(session?.user?._id as string);
+ const userChat = searchParams?.user && await getUser(searchParams?.user as string);
+ const users = await getUsers();
+ 
   return (
-   <div>    
-    <div className="border-b p-4 flex items-center space-x-3">
-      <div className="w-10 h-10 bg-gray-300 rounded-full" />
-      <div className="font-semibold">Alice Smith</div>
-    </div>
-    <div className="flex-1 p-4 overflow-y-auto"> 
-      <div className="flex items-end space-x-2 mb-4">
-        <div className="w-10 h-10 bg-gray-300 rounded-full" />
-        <div className="bg-gray-200 rounded px-4 py-2">
-          Hi there! How are you doing?
-        </div>
-      </div>
-      <div className="flex items-end justify-end space-x-2 mb-4">
-        <div className="bg-blue-500 text-white rounded px-4 py-2">
-          I'm doing great, thanks for asking!
-        </div>
-        <div className="w-10 h-10 bg-gray-300 rounded-full" />
-      </div> 
-    </div>
+   <div className="bg-gray">    
+     <ChatSection 
+       users={users.filter((user: User) => user._id !== session?.user?._id)}
+       sender={userSession} 
+       receiving={userChat} 
+     />
    </div>
   );
 };

@@ -1,7 +1,7 @@
 import "./globals.css";
-import NavBar from "./componnets/navBar";
-import Footer from "./componnets/footer";
-import SessionProvider from "./componnets/sessionProvider";
+import NavBar from "./layouts/navBar";
+import Footer from "./layouts/footer";
+import SessionProvider from "./layouts/sessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../pages/api/auth/[...nextauth]";
 
