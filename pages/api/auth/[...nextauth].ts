@@ -17,8 +17,7 @@ export const authOptions : AuthOptions = {
     signIn : async ({ user }:{ user : UserType} ) => {     
       await connectMongo();     
       const { name, email, image} = user;
-      console.log(image);
-      
+     
       if (!await User.findOne({email : email})) {
         const newUser =  await new User({ name, email, image }); 
         await newUser.save() 
@@ -29,11 +28,10 @@ export const authOptions : AuthOptions = {
     },  
       session: async ({ session , token } : {session : any, token : any}) => {
         const { _id } = await User.findOne({email : session.user.email})
-        session.user._id = _id
+        session.user._id = `${_id.toString()}`
          return session;
     },  
   },
-
 };
 
 export default NextAuth(authOptions);

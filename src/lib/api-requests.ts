@@ -1,5 +1,14 @@
 
 const API_AND_POINT ='http://localhost:3000/api'
+
+export async function chatInit(){
+ try {
+  
+ } catch (error) {
+  
+ }
+}
+
 export async function getUser(id:string){
   try {
     const response = await fetch(`${API_AND_POINT}/users/${id}`);

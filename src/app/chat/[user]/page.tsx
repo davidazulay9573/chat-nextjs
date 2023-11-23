@@ -1,19 +1,18 @@
 
 import { revalidatePath } from "next/cache";
 import { io } from "socket.io-client";
-import { getUser, getUsers } from "@/app/lib/api-requests";
+import { getUser, getUsers } from "@/lib/api-requests";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../pages/api/auth/[...nextauth]";
-import { Message, User } from "@/app/lib/type";
+import { Message, User } from "@/lib/type";
 import ChatSection from "@/componnets/chatSection";
 
 export default async function Page({ params }: { params: { user: string } }){
 
  const session : {user: User} | null = await getServerSession(authOptions);
- const userChat = await getUser(params.user);
- console.log(session);
- 
  const userSession = await getUser(session?.user?._id as string);
+
+ const userChat = await getUser(params.user);
  const messages = await (await fetch("http://localhost:3000/api/chat")).json()
 
  let socket : any ;
