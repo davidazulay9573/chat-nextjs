@@ -11,15 +11,21 @@ type NextApiResponseWithIO = NextApiResponse & {
   };
 };
 
-
 export default async function SocketHandler(req: NextApiRequest, res: NextApiResponseWithIO) {
-  // Initialize socket.io only once
-  if (!res.socket.server.io) {
-    console.log("Initializing new Socket.io server...");
-    const io = new Server(res.socket.server);
+  const { sender , receiving }  =  req.query;
+  if (sender && receiving) {
 
+
+  if (!res.socket.server.io) { 
+    const io = new Server(res.socket.server);
+    const userConnections = new Map();
     io.on("connection", (socket: Socket) => {
-      console.log("Socket connected:", socket.id);
+      io.to(receiving).emit("user_connected");
+      
+      socket.on("disconnect", () => {
+        userConnections.delete(sender);
+         io.to(receiving).emit("user_disconnected");
+      });
 
       socket.on("send-message", async (data) => {
         const message = new Message(data);
@@ -27,12 +33,9 @@ export default async function SocketHandler(req: NextApiRequest, res: NextApiRes
         io.emit("receive-message", data);
       });
 
-      socket.on("typing", (data) => {
-        console.log('Typing data received:', data); 
+      socket.on("typing", (data) => {   
         socket.broadcast.emit("user_typing", { isTyping: data.isTyping }); 
       });
-
-      // Add additional event listeners here if needed
     });
 
     res.socket.server.io = io;
@@ -40,11 +43,6 @@ export default async function SocketHandler(req: NextApiRequest, res: NextApiRes
     console.log("Using existing Socket.io server.");
   }
 
-  // Extract sender and receiving from the query parameters
-  const { sender, receiving } = req.query;
-
-  // Handle fetching messages only if sender and receiving are defined
-  if (sender && receiving) {
     try {
       const messages = await Message.find({
         $or: [
@@ -58,7 +56,6 @@ export default async function SocketHandler(req: NextApiRequest, res: NextApiRes
       res.status(500).json({ error: error.message });
     }
   } else {
-    // If sender and receiving aren't provided, we don't need to fetch messages
     res.status(400).json({ error: "Sender and receiving query parameters are required." });
   }
 }
