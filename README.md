@@ -39,5 +39,5 @@ cd chat-nextjs
    npm run start
 ```
 
-Now it's all ready to go!
+Now all ready to go!
 Open http://localhost:3000 to view it in your browser.
