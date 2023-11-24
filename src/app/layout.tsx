@@ -19,7 +19,7 @@ export default async function RootLayout({ children }: {children : any}) {
         <body className="flex flex-col min-h-screen">
           <NavBar />
           <div className="flex-grow p-4">{children}</div>
-          <Footer />
+          {/* <Footer /> */}
         </body>
       </SessionProvider>
     </html>
