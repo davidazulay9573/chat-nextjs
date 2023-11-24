@@ -10,19 +10,33 @@ let socket : Socket;
 
 export default function ChatSection({users, sender, receiving} : {users : User[], sender : User, receiving: User}){
   
-  const [messageContent, setMessageContent] = useState('');
+  const [messageContent, setMessageContent] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
  
   useEffect(() => {messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}, [messages]);
   useEffect( () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      requestNotificationPermission();
+    }
     socketInit();
     return () => {
       socket?.disconnect();
     };
   }, [receiving]);
+
+    
+    const requestNotificationPermission = async () => {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+       
+      }
+    }
+
+  
 
  const socketInit = async() => {
     socket = io({query : {userId: sender._id}}); 
@@ -49,13 +63,22 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
  const handleSendMessage = (e:any) => {
     e.preventDefault();
     socket.emit("send-message", { sender : sender._id, receiving : receiving._id, content :messageContent , createdAt: Date.now()});
+    if (Notification.permission === 'granted') {  
+   const notification = new Notification('New message', {
+      body: `Message: ${messageContent} From: ${sender.name}`, 
+    });
+     notification.onclick = () => {
+      window.focus();
+      window.open(window.location.origin + `/chat/?user=${sender._id}`);
+    };
+   }
     setMessageContent("");
   }
   
   return (
     <div className="dark:bg-gray-800 min-h-screen">
       <div className="flex flex-col lg:flex-row">
-        {(!receiving || innerWidth > 1000) && 
+        {(!receiving || (innerWidth && innerWidth > 1000)) && 
         <div className="lg:flex lg:w-1/2 lg:border-r text-white lg:border-gray-700 overflow-y-auto">
           <div className="space-y-4 p-4">
             {users.map((user) => (
@@ -68,7 +91,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
           </div>
         </div>}
         {receiving && (
-          <div className="flex flex-1 flex-col lg:w-1/2">
+          <div className="flex flex-1 flex-col lg:w-1/4">
             <div className="flex-none border-b border-gray-700 p-4 flex items-center space-x-3">
               <img src={receiving.image} alt={receiving.name} className="w-10 h-10 rounded-full" />
               <div className="font-semibold text-white">{receiving.name}</div>
@@ -93,10 +116,8 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
                   })}
                 <div ref={messagesEndRef} /> 
              </div>
-
             <div className=" bottom-0 mb-4 w-full flex flex-col items-center">
-            {isTyping && <div className="m-2 ">Typing...</div>}
-
+              {isTyping && <span className="m-2 text-white">Typing...</span>}
               <form onSubmit={handleSendMessage} className="space-y-4 p-4">
                <textarea
                   value={messageContent}
@@ -107,7 +128,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
                   placeholder="Type your message here..."
                 />
                 <button type="submit" className="p-2 w-full bg-blue-200 text-black rounded-full hover:bg-blue-500">
-                  Send Message
+                  Send 
                 </button>
               </form>
             </div>
@@ -115,6 +136,5 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
         )}
       </div>
     </div>
-
    )
 }

@@ -28,11 +28,11 @@ export const authOptions : NextAuthOptions = {
       }
       return true ;
     },  
-      session: async ({ session , token } : {session : any, token : any}) => {
+      session: async ({ session } : {session : any }) => {
         if(session){
           const {_id} = await User.findOne({email : session.user.email})
           session.user._id = `${_id.toString()}`;      
-        } 
+         } 
        return session;
     },  
   },
