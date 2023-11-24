@@ -20,6 +20,9 @@ git clone https://github.com/davidazulay9573/chat-nextjs
 cd chat-nextjs
 ```
 ### Switch .env.example file to .env.local and fill the variables
+
+#### for development run:
+
  ```bash
    npm i
 ```
@@ -27,7 +30,7 @@ cd chat-nextjs
    npm run dev
 ```
 
-#### for production run :
+#### for production run:
 
 ```bash
    npm run build
