@@ -1,10 +1,8 @@
 import "./globals.css";
 import NavBar from "./layouts/navBar";
-import Footer from "./layouts/footer";
 import SessionProvider from "./layouts/sessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../pages/api/auth/[...nextauth]";
-
 
 export const metadata = {
   title: "Posts-Router",
@@ -19,7 +17,6 @@ export default async function RootLayout({ children }: {children : any}) {
         <body className="flex flex-col min-h-screen">
           <NavBar />
           <div className="flex-grow p-4">{children}</div>
-          {/* <Footer /> */}
         </body>
       </SessionProvider>
     </html>

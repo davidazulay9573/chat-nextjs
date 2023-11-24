@@ -1,4 +1,3 @@
-
 const API_AND_POINT ='http://localhost:3000/api'
 
 export async function getUser(id:string){
