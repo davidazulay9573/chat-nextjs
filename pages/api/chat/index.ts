@@ -21,26 +21,22 @@ export default async function SocketHandler(req: NextApiRequest, res: NextApiRes
       const userId = socket.handshake.query.userId;
       if (typeof userId === 'string') {
           connectedUsers[userId] = true;
-
           socket.on('disconnect', () => {
             delete connectedUsers[userId];
             io.emit('users-status', connectedUsers);
           });
-
           io.emit('users-status', connectedUsers);
       }
       io.emit('users-status', connectedUsers);
 
-      socket.on("send-message", async (data) => {
-        console.log(data);
-        
+      socket.on("send-message", async (data) => {    
         const message = new Message(data);
         await message.save();
         io.emit("receive-message", data);
       });
-
+     
       socket.on("typing", (data) => {   
-        socket.broadcast.emit("user_typing", { isTyping: data.isTyping }); 
+        socket.broadcast.emit("user_typing", { isTyping: data.isTyping, userId: data.userId }); 
       });
     });
 

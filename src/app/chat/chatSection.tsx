@@ -18,30 +18,40 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
  
   useEffect(() => {messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}, [messages]);
   useEffect( () => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      requestNotificationPermission();
-    }
     socketInit();
     return () => {
       socket?.disconnect();
     };
   }, [receiving]);
 
-    
-    const requestNotificationPermission = async () => {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        console.log('Notification permission granted.');
-       
-      }
-    }
-
   
+  const requestNotificationPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+      
+    }
+  }
 
  const socketInit = async() => {
+   if (typeof window !== 'undefined' && 'Notification' in window) {
+      requestNotificationPermission();
+    }
     socket = io({query : {userId: sender._id}}); 
     socket.on("receive-message", (data: Message) => { 
+       if (Notification.permission === 'granted') {  
+        const notification = new Notification('New message', {
+          body: data.content, 
+          icon : sender.image
+        });
+        notification.onclick = () => {
+          window.focus();
+          window.open(window.location.origin + `/chat/?user=${sender._id}`);
+        }
+      }
       setMessages((messages: Message[]) => [...messages, data]);
+
+   
     });
     socket.on("user_typing", (data : any) => {
       setIsTyping(data.isTyping);
@@ -63,16 +73,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
  const handleSendMessage = (e:any) => {
     e.preventDefault();
     socket.emit("send-message", { sender : sender._id, receiving : receiving._id, content :messageContent , createdAt: Date.now()});
-    if (Notification.permission === 'granted') {  
-   const notification = new Notification('New message', {
-      body: `Message: ${messageContent} From: ${sender.name}`, 
-    });
-     notification.onclick = () => {
-      window.focus();
-      window.open(window.location.origin + `/chat/?user=${sender._id}`);
-    };
-   }
-    setMessageContent("");
+     setMessageContent("");
   }
   
   return (
