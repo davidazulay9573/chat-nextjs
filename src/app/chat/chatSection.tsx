@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect, useRef } from "react";
 import { Message, User } from "@/lib/type";
 import { getMessages } from "@/lib/api-requests";
@@ -28,8 +29,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
   const requestNotificationPermission = async () => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      console.log('Notification permission granted.');
-      
+      console.log('Notification permission granted.'); 
     }
   }
 
@@ -39,8 +39,8 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
     }
     socket = io({query : {userId: sender._id}}); 
     socket.on("receive-message", (data: Message) => { 
-       if (Notification.permission === 'granted') {  
-        const notification = new Notification('New message', {
+      if (Notification.permission === 'granted') {  
+        const notification = new Notification(sender.name, {
           body: data.content, 
           icon : sender.image
         });
@@ -50,8 +50,6 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
         }
       }
       setMessages((messages: Message[]) => [...messages, data]);
-
-   
     });
     socket.on("user_typing", (data : any) => {
       setIsTyping(data.isTyping);
@@ -60,8 +58,8 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
       setOnlineUsers(users);
     });
     if(receiving){
-      const messages =  await getMessages(sender._id, receiving._id) || []
-      messages &&  setMessages(messages) 
+      const messages = await getMessages(sender._id, receiving._id) || []
+      messages && setMessages(messages) 
     }  
   }  
 
@@ -73,7 +71,7 @@ export default function ChatSection({users, sender, receiving} : {users : User[]
  const handleSendMessage = (e:any) => {
     e.preventDefault();
     socket.emit("send-message", { sender : sender._id, receiving : receiving._id, content :messageContent , createdAt: Date.now()});
-     setMessageContent("");
+    setMessageContent("");
   }
   
   return (
