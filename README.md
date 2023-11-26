@@ -4,7 +4,7 @@ A real-time chat application built with
 
 `Next.js 14`, with `TypeScript`, 
 
-useing `NextAuth` for authentication, 
+`NextAuth` for authentication, 
 
 `Socket.io` for real-time communication, 
 
