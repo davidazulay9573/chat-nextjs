@@ -1,7 +1,10 @@
 # Next.js Chat App
 
-A real-time chat application built with Next.js 14, TypeScript, 
-NextAuth for authentication, Socket.io for real-time communication, and MongoDB for data storage.
+A real-time chat application built with
+`Next.js 14`, with `TypeScript`, 
+useing `NextAuth` for authentication, 
+`Socket.io` for real-time communication, 
+`MongoDB` for data storage.
 
 ## Getting Started
 
