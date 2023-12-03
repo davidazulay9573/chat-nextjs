@@ -28,13 +28,13 @@ export const authOptions : NextAuthOptions = {
       }
       return true ;
     },  
-      session: async ({ session } : {session : any }) => {
-        if(session.user){
-          const { _id } = await User.findOne({email : session.user.email})
-          session.user._id = `${_id.toString()}`;      
-         } 
-       return session;
-    },  
+    //   session: async ({ session } : {session : any }) => {
+    //     if(session.user){
+    //       const { _id } = await User.findOne({email : session.user.email})
+    //       session.user._id = `${_id.toString()}`;      
+    //      } 
+    //    return session;
+    // },  
   },
 };
 
