@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../pages/api/auth/[...nextauth]";
 
 export const metadata = {
-  title: "Posts-Router",
+  title: "Chat-NextJS",
   description: "",
 };
 

@@ -40,10 +40,8 @@ export default async function SocketHandler(req: NextApiRequest, res: NextApiRes
       });
     });
 
-    res.socket.server.io = io;
-  } else {
-    console.log("Using existing Socket.io server.");
-  }
+      res.socket.server.io = io;
+   } 
 
     try {
       const messages = await Message.find({
