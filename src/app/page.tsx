@@ -1,11 +1,14 @@
-"use client"
+import { getUsers } from "@/lib/api-requests";
+import { User } from "@/lib/type";
 
-const Home = () => {
+const Home = async () => {
   
-
+const users = await getUsers();
   return (
     <div>
-      hello
+      {users.map((user : User) => {
+        return <p>{user.name}</p>
+      })}
     </div>
   );
 };
