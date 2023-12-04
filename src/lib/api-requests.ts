@@ -1,4 +1,4 @@
-const API_AND_POINT ='http://localhost:3000/api'
+const API_AND_POINT = process.env.API_AND_POINT || 'http://localhost:3000/api'
 
 export async function getUser(id:string){
   try {
